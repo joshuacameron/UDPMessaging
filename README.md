@@ -1,3 +1,11 @@
+IPeerIdentification is used for identifying distinct users. There are two built in implementations, one with string (shown below) and one with integer.
+
+IPeerManager manages the mapping of IPeerIdentifications and IPEndPoints. When a message from an unknown peer is received, it will add the IPEndPoint.
+
+ISerialiser is a simple interface used to convert message between classes and byte arrays, Json.Net implementation is added by default, but any serialiser can be used.
+
+UDPNetworking uses an event called OnMessageReceived to notify of new messages, and message can be sent asynchronously by using SendMessageAsync.
+
 ```csharp
 const int servicePort = 1337;
 
