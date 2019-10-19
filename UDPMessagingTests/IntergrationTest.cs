@@ -1,11 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using UDPMessaging.Identification.PeerIdentification;
 using UDPMessaging.Messages;
 using UDPMessaging.Networking;
@@ -17,15 +13,18 @@ namespace UDPMessagingTests
     [TestClass]
     public class IntergrationTest
     {
+        private CountdownEvent _awaitingMessage;
+
         [TestMethod]
         public void IntTest()
         {
+            _awaitingMessage = new CountdownEvent(2);
+
             const string peerAName = "PeerA";
             const int peerAPort = 4000;
 
             const string peerBName = "PeerB";
             const int peerBPort = 5000;
-
 
             IPeerIdentification peerAIdentification = new StringPeerIdentification(peerAName);
             IPeerIdentification peerBIdentification = new StringPeerIdentification(peerBName);
@@ -34,47 +33,52 @@ namespace UDPMessagingTests
             peerApeerManager.AddOrUpdatePeer(peerBIdentification, new IPEndPoint(IPAddress.Loopback, peerBPort));
 
             IPeerManager peerBpeerManager = new PeerManager();
-            peerApeerManager.AddOrUpdatePeer(peerAIdentification, new IPEndPoint(IPAddress.Loopback, peerAPort));
+            peerBpeerManager.AddOrUpdatePeer(peerAIdentification, new IPEndPoint(IPAddress.Loopback, peerAPort));
 
             ISerializer serializer = new JSONSerialiser();
 
-            //IPeerIdentification peerName, IPeerManager peerManager, ISerializer serializer, IPEndPoint ipEndPoint
-            IUDPNetworking peerA = new BasicUDPNetworking(
+            IUDPNetworking peerA = new UDPNetworking(
                 peerAIdentification,
                 peerApeerManager,
                 serializer,
                 new IPEndPoint(IPAddress.Loopback, peerAPort)
             );
 
-            IUDPNetworking peerB = new BasicUDPNetworking(
+            IUDPNetworking peerB = new UDPNetworking(
                 peerBIdentification,
                 peerBpeerManager,
                 serializer,
                 new IPEndPoint(IPAddress.Loopback, peerBPort)
             );
 
-            peerB.OnMessageReceived += PeerB_OnMessageReceived;
-
-            Thread.Sleep(1000);
+            peerA.OnMessageReceived += OnMessageReceived;
+            peerB.OnMessageReceived += OnMessageReceived;
 
             peerA.SendMessageAsync(new StringMessage()
             {
                 To = peerBIdentification,
                 From = peerAIdentification,
-                Data = "Hello world!"
+                Data = "Hello B!"
             });
 
-            Thread.Sleep(1000);
+            peerB.SendMessageAsync(new StringMessage()
+            {
+                To = peerAIdentification,
+                From = peerBIdentification,
+                Data = "Hello A!"
+            });
+
+            _awaitingMessage.Wait();
 
             peerA.Dispose();
             peerB.Dispose();
         }
 
-        private void PeerB_OnMessageReceived(object sender, IBaseMessage message)
+        private void OnMessageReceived(object sender, IBaseMessage message)
         {
-            StringMessage stringMessage = message as StringMessage;
+            Console.WriteLine(((StringMessage)message).Data);
 
-            Console.WriteLine(stringMessage.Data);
+            _awaitingMessage.Signal();
         }
     }
 }
