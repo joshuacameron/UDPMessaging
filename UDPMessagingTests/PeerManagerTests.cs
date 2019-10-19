@@ -9,7 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using UDPMessaging.Identification.PeerIdentification;
 using UDPMessaging.PeerManagement;
 
-namespace UDPNetworkingTest
+namespace UDPMessagingTests
 {
     [TestClass]
     public class PeerManagerTests

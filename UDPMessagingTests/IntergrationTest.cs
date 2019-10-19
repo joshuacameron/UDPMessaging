@@ -12,13 +12,13 @@ using UDPMessaging.Networking;
 using UDPMessaging.PeerManagement;
 using UDPMessaging.Serialisation;
 
-namespace UDPNetworkingTest
+namespace UDPMessagingTests
 {
     [TestClass]
     public class IntergrationTest
     {
         [TestMethod]
-        public void TestMethod1()
+        public void IntTest()
         {
             const string peerAName = "PeerA";
             const int peerAPort = 4000;

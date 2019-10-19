@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Bogus;
 using UDPMessaging.Identification.PeerIdentification;
 
-namespace UDPNetworkingTest
+namespace UDPMessagingTests
 {
     public static class Extensions
     {

@@ -7,7 +7,7 @@ using Bogus;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using UDPMessaging.Exceptions;
 
-namespace UDPNetworkingTest.Exceptions
+namespace UDPMessagingTests.Exceptions
 {
     [TestClass]
     public class ReceiveFailureExceptionTests

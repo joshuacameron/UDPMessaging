@@ -5,7 +5,7 @@ using UDPMessaging.Identification.PeerIdentification;
 using UDPMessaging.Messages;
 using UDPMessaging.Serialisation;
 
-namespace UDPNetworkingTest.Networking
+namespace UDPMessagingTests.Networking
 {
     [TestClass]
     public class UDPNetworkingTests

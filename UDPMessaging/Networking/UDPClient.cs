@@ -4,8 +4,6 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using UDPMessaging.Exceptions;
-using UDPMessaging.Utilities;
-using UDPMessaging.Utilities.ProcessingThread;
 
 namespace UDPMessaging.Networking
 {
@@ -17,7 +15,8 @@ namespace UDPMessaging.Networking
 
         protected bool DisposedValue; // To detect redundant calls
 
-        private readonly ProcessingHandleThread _listeningThread;
+        private readonly Thread _listeningThread;
+        private readonly ManualResetEvent _onStop;
 
         private UdpClient _udpClient;
         private readonly IPEndPoint _ipEndPoint;
@@ -35,11 +34,8 @@ namespace UDPMessaging.Networking
             _isRebuildingLockObject = new object();
             _isSocketReady = new ManualResetEvent(true);
 
-            _listeningThread = new ProcessingHandleThread(
-                new Semaphore(1, 1, Guid.NewGuid().ToString()),
-                Receive,
-                exception => { ReceiveException(exception); return true; }
-            );
+            _listeningThread = new Thread(Receive);
+            _onStop = new ManualResetEvent(false);
 
             _listeningThread.Start();
         }
@@ -61,28 +57,30 @@ namespace UDPMessaging.Networking
 
         private void Receive()
         {
-            try
+            Task onStopTask = Task.Run(() => _onStop.WaitOne());
+
+            while (true)
             {
-                _isSocketReady.WaitOne();
-
-                Task<UdpReceiveResult> result = _udpClient.ReceiveAsync();
-                result.Wait();
-
-                if (result.Result != null)
+                try
                 {
-                    OnMessageReceived?.Invoke(this, new Tuple<byte[], IPEndPoint>(result.Result.Buffer, result.Result.RemoteEndPoint));
+                    _isSocketReady.WaitOne();
+
+                    Task<UdpReceiveResult> result = _udpClient.ReceiveAsync();
+
+                    if (Task.WaitAny(onStopTask, result) == 0)
+                    {
+                        return;
+                    }
+
+                    OnMessageReceived?.Invoke(this,
+                        new Tuple<byte[], IPEndPoint>(result.Result.Buffer, result.Result.RemoteEndPoint));
+                }
+                catch (Exception e)
+                {
+                    OnMessageReceivedFailure?.Invoke(this, new ReceiveFailureException("UDPClient threw an error when receiving", e));
+                    RebuildUdpClient();
                 }
             }
-            catch (Exception e)
-            {
-                ReceiveException(e);
-                RebuildUdpClient();
-            }
-        }
-
-        private void ReceiveException(Exception e)
-        {
-            OnMessageReceivedFailure?.Invoke(this, new ReceiveFailureException("UDPClient threw an error when receiving", e));
         }
 
         private void RebuildUdpClient()
@@ -109,7 +107,6 @@ namespace UDPMessaging.Networking
         private static UdpClient InitUdpClient(UdpClient udpClient, IPEndPoint ipEndPoint)
         {
             udpClient?.Dispose();
-            udpClient = null;
             udpClient = new UdpClient(ipEndPoint);
             DisableIcmpUnreachable(udpClient);
             return udpClient;
@@ -127,7 +124,8 @@ namespace UDPMessaging.Networking
         {
             if (DisposedValue) return;
 
-            _listeningThread?.Dispose();
+            _onStop.Set();
+            _listeningThread.Join();
             _udpClient?.Dispose();
             _isSocketReady?.Dispose();
 
