@@ -7,34 +7,34 @@ using UDPMessaging.Exceptions;
 
 namespace UDPMessaging.Networking
 {
-    public class UDPClient : IUDPClient
+    internal sealed class UDPClient : IUDPClient
     {
         public event EventHandler<SendFailureException> OnMessageSendFailure;
         public event EventHandler<ReceiveFailureException> OnMessageReceivedFailure;
-        public event EventHandler<Tuple<byte[], IPEndPoint>> OnMessageReceived;
-
-        protected bool DisposedValue; // To detect redundant calls
-
-        private readonly Thread _listeningThread;
-        private readonly ManualResetEvent _onStop;
+        public event EventHandler<UdpReceiveResult> OnMessageReceived;
 
         private UdpClient _udpClient;
         private readonly IPEndPoint _ipEndPoint;
 
-        private bool _isRebuilding;
-        private readonly object _isRebuildingLockObject;
+        private readonly Thread _listeningThread;
+        private readonly ManualResetEvent _onThreadStarted;
+        private readonly ManualResetEvent _onStop;
+
         private readonly ManualResetEvent _isSocketReady;
+
+        
+        private bool _disposedValue; // To detect redundant calls
 
         public UDPClient(IPEndPoint ipEndPoint)
         {
             _ipEndPoint = ipEndPoint;
-            _udpClient = InitUdpClient(_udpClient, _ipEndPoint);
+            _udpClient = new UdpClient(_ipEndPoint);
+            DisableIcmpUnreachable(_udpClient);
 
-            _isRebuilding = false;
-            _isRebuildingLockObject = new object();
             _isSocketReady = new ManualResetEvent(true);
 
             _listeningThread = new Thread(Receive);
+            _onThreadStarted = new ManualResetEvent(false);
             _onStop = new ManualResetEvent(false);
 
             _listeningThread.Start();
@@ -58,6 +58,7 @@ namespace UDPMessaging.Networking
         private void Receive()
         {
             Task onStopTask = Task.Run(() => _onStop.WaitOne());
+            _onThreadStarted.Set();
 
             while (true)
             {
@@ -72,12 +73,11 @@ namespace UDPMessaging.Networking
                         return;
                     }
 
-                    OnMessageReceived?.Invoke(this,
-                        new Tuple<byte[], IPEndPoint>(result.Result.Buffer, result.Result.RemoteEndPoint));
+                    OnMessageReceived?.Invoke(this, result.Result);
                 }
                 catch (Exception e)
                 {
-                    OnMessageReceivedFailure?.Invoke(this, new ReceiveFailureException("UDPClient threw an error when receiving", e));
+                    OnMessageReceivedFailure?.Invoke(this, new ReceiveFailureException("UDPClient threw an exception when receiving", e));
                     RebuildUdpClient();
                 }
             }
@@ -85,31 +85,16 @@ namespace UDPMessaging.Networking
 
         private void RebuildUdpClient()
         {
-            lock (_isRebuildingLockObject)
+            lock (_isSocketReady)
             {
-                if (_isRebuilding)
-                {
-                    return; //It's currently rebuilding
-                }
-                _isRebuilding = true;
+                if (!_isSocketReady.WaitOne(0)) return; //Return if it's already rebuilding
                 _isSocketReady.Reset();
             }
 
-            _udpClient = InitUdpClient(_udpClient, _ipEndPoint);
-
-            lock (_isRebuildingLockObject)
-            {
-                _isRebuilding = false;
-                _isSocketReady.Set();
-            }
-        }
-
-        private static UdpClient InitUdpClient(UdpClient udpClient, IPEndPoint ipEndPoint)
-        {
-            udpClient?.Dispose();
-            udpClient = new UdpClient(ipEndPoint);
-            DisableIcmpUnreachable(udpClient);
-            return udpClient;
+            _udpClient.Dispose();
+            _udpClient = new UdpClient(_ipEndPoint);
+            DisableIcmpUnreachable(_udpClient);
+            _isSocketReady.Set();
         }
 
         private static void DisableIcmpUnreachable(UdpClient udpClient)
@@ -120,16 +105,21 @@ namespace UDPMessaging.Networking
             udpClient.Client.IOControl(unchecked((int)sioUdpConnreset), new[] { Convert.ToByte(false) }, null);
         }
 
+        public void WaitForStartup()
+        {
+            _onThreadStarted.WaitOne();
+        }
+
         public void Dispose()
         {
-            if (DisposedValue) return;
+            if (_disposedValue) return;
 
             _onStop.Set();
             _listeningThread.Join();
             _udpClient?.Dispose();
             _isSocketReady?.Dispose();
 
-            DisposedValue = true;
+            _disposedValue = true;
         }
     }
 }

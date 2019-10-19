@@ -9,7 +9,7 @@ using UDPMessaging.Serialisation;
 
 namespace UDPMessaging.Networking
 {
-    public abstract class BaseUDPNetworking : IUDPNetworking
+    public class UDPNetworking : IUDPNetworking
     {
         public event EventHandler<IBaseMessage> OnMessageReceived;
         public event EventHandler<ReceiveFailureException> OnMessageReceivedFailure;
@@ -22,11 +22,11 @@ namespace UDPMessaging.Networking
 
         protected const int MaxPacketSize = 65507;
 
-        protected UDPClient UDPClient;
+        internal UDPClient UDPClient;
 
         protected bool DisposedValue; // To detect redundant calls
 
-        protected BaseUDPNetworking(IPeerIdentification peerName, IPeerManager peerManager, ISerializer serializer, IPEndPoint ipEndPoint)
+        public UDPNetworking(IPeerIdentification peerName, IPeerManager peerManager, ISerializer serializer, IPEndPoint ipEndPoint)
         {
             PeerName = peerName;
             PeerManager = peerManager;
@@ -34,11 +34,12 @@ namespace UDPMessaging.Networking
 
             UDPClient = new UDPClient(ipEndPoint);
             UDPClient.OnMessageReceived += 
-                (sender, tuple) => RecieveMessageAsync(tuple.Item1, tuple.Item2);
+                (sender, udpResult) => RecieveMessageAsync(udpResult.Buffer, udpResult.RemoteEndPoint);
             UDPClient.OnMessageReceivedFailure +=
                 (sender, exception) => OnMessageReceivedFailure?.Invoke(sender, exception);
             UDPClient.OnMessageSendFailure += 
                 (sender, exception) => OnMessageSendFailure?.Invoke(sender, exception);
+            UDPClient.WaitForStartup();
         }
 
         public async void SendMessageAsync(IBaseMessage message)
