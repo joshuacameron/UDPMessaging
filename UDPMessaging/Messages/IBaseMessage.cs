@@ -5,7 +5,7 @@ using UDPMessaging.Identification.PeerIdentification;
 
 namespace UDPMessaging.Messages
 {
-    public interface IBaseMessage : ISerializable
+    public interface IBaseMessage
     {
         IPeerIdentification To { get; set; }
         IPeerIdentification From { get; set; }

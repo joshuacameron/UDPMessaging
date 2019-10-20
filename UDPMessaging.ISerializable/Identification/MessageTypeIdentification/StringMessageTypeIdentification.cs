@@ -5,7 +5,7 @@ using UDPMessaging.Extensions;
 namespace UDPMessaging.Identification.MessageTypeIdentification
 {
     [Serializable()]
-    public class StringMessageTypeIdentification : IMessageTypeIdentification
+    public class StringMessageTypeIdentification : IMessageTypeIdentification, ISerializable
     {
         private readonly string _identification;
         private const string IdentificationSerialisationStr = "_identification";

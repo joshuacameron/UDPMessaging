@@ -8,7 +8,7 @@ using UDPMessaging.Extensions;
 namespace UDPMessaging.Messages
 {
     [Serializable()]
-    public abstract class BaseMessage : IBaseMessage
+    public abstract class BaseMessage : IBaseMessage, ISerializable
     {
         public IPeerIdentification To { get; set; }
         private const string ToSerialisationStr = "To";

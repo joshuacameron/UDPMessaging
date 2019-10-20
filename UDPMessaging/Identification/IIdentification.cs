@@ -2,7 +2,7 @@
 
 namespace UDPMessaging.Identification
 {
-    public interface IIdentification : ISerializable
+    public interface IIdentification
     {
         object GetIdentification();
     }
