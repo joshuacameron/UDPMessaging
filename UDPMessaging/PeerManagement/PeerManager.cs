@@ -4,7 +4,7 @@ using UDPMessaging.Identification.PeerIdentification;
 
 namespace UDPMessaging.PeerManagement
 {
-    internal class PeerManager : IPeerManager
+    public class PeerManager : IPeerManager
     {
         private readonly Dictionary<IPeerIdentification, IPEndPoint> _peers;
 

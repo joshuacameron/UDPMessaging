@@ -2,6 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Authors>Joshua Cameron</Authors>
+    <Product />
+    <Company />
+    <Description>An asycnronous C# UDP messaging library</Description>
+    <RepositoryUrl>https://github.com/JoshuaaMichael/UDPMessaging</RepositoryUrl>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/JoshuaaMichael/UDPMessaging/master/LICENSE.txt</PackageLicenseUrl>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
 
 </Project>
