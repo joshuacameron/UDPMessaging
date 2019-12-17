@@ -3,7 +3,7 @@ using UDPMessaging.Messages;
 
 namespace UDPMessaging.Exceptions
 {
-    public class SendFailureException : UDPNetworkingException
+    public class SendFailureException : BaseFailureException
     {
         private readonly IBaseMessage _message;
 
