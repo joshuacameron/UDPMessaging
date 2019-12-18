@@ -12,9 +12,4 @@
     <ProjectReference Include="..\UDPMessaging\UDPMessaging.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Identification\MessageVersionIdentification\" />
-    <Folder Include="Identification\PeerIdentification\" />
-  </ItemGroup>
-
 </Project>
