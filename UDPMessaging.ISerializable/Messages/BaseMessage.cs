@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Runtime.Serialization;
 using UDPMessaging.Identification.MessageTypeIdentification;
 using UDPMessaging.Identification.MessageVersionIdentification;
@@ -7,17 +8,13 @@ using UDPMessaging.Extensions;
 
 namespace UDPMessaging.Messages
 {
-    [Serializable()]
+    [Serializable]
     public abstract class BaseMessage : IBaseMessage, ISerializable
     {
         public IPeerIdentification To { get; set; }
-        private const string ToSerialisationStr = "To";
         public IPeerIdentification From { get; set; }
-        private const string FromSerialisationStr = "From";
         public IMessageTypeIdentification Type { get; protected set; }
-        private const string TypeSerialisationStr = "Type";
         public IMessageVersionIdentification Version { get; set; }
-        private const string VersionSerialisationStr = "Version";
 
         protected BaseMessage(IMessageTypeIdentification type)
         {
@@ -27,18 +24,18 @@ namespace UDPMessaging.Messages
         protected BaseMessage(SerializationInfo info, StreamingContext context)
         {
             if (info == null) return;
-            To = info.GetValue<IPeerIdentification>(ToSerialisationStr);
-            From = info.GetValue<IPeerIdentification>(FromSerialisationStr);
-            Type = info.GetValue<IMessageTypeIdentification>(TypeSerialisationStr);
-            Version = info.GetValue<IMessageVersionIdentification>(VersionSerialisationStr);
+            To = info.GetValue<IPeerIdentification>(nameof(To));
+            From = info.GetValue<IPeerIdentification>(nameof(From));
+            Type = info.GetValue<IMessageTypeIdentification>(nameof(Type));
+            Version = info.GetValue<IMessageVersionIdentification>(nameof(Version));
         }
 
         public virtual void GetObjectData(SerializationInfo info, StreamingContext context)
         {
-            info.AddValue<IPeerIdentification>(ToSerialisationStr, To);
-            info.AddValue<IPeerIdentification>(FromSerialisationStr, From);
-            info.AddValue<IMessageTypeIdentification>(TypeSerialisationStr, Type);
-            info.AddValue<IMessageVersionIdentification>(VersionSerialisationStr, Version);
+            info.AddValue(nameof(To), To);
+            info.AddValue(nameof(From), From);
+            info.AddValue(nameof(Type), Type);
+            info.AddValue(nameof(Version), Version);
         }
     }
 }

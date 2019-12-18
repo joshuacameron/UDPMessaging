@@ -4,11 +4,10 @@ using UDPMessaging.Extensions;
 
 namespace UDPMessaging.Identification.PeerIdentification
 {
-    [Serializable()]
-    public class StringPeerIdentification : IPeerIdentification
+    [Serializable]
+    public class StringPeerIdentification : IPeerIdentification, ISerializable
     {
         private readonly string _identification;
-        private const string IdentificationSerialisationStr = "_identification";
 
         public StringPeerIdentification(string identifier)
         {
@@ -17,7 +16,7 @@ namespace UDPMessaging.Identification.PeerIdentification
 
         protected StringPeerIdentification(SerializationInfo info, StreamingContext ctxt)
         {
-            _identification = info.GetValue<string>(IdentificationSerialisationStr);
+            _identification = info.GetValue<string>(nameof(_identification));
         }
 
         public static StringPeerIdentification Generate()
@@ -50,7 +49,7 @@ namespace UDPMessaging.Identification.PeerIdentification
 
         public void GetObjectData(SerializationInfo info, StreamingContext context)
         {
-            info.AddValue<string>(IdentificationSerialisationStr, _identification);
+            info.AddValue(nameof(_identification), _identification);
         }
 
         public object GetIdentification()

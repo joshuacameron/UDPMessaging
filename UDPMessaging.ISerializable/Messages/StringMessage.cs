@@ -5,11 +5,10 @@ using UDPMessaging.Extensions;
 
 namespace UDPMessaging.Messages
 {
-    [Serializable()]
+    [Serializable]
     public class StringMessage : BaseMessage
     {
         public string Data { get; set; }
-        private const string DataSerialisationStr = "Data";
 
         public StringMessage()
             : base(new TypeMessageTypeIdentification(typeof(StringMessage))) { }
@@ -18,13 +17,13 @@ namespace UDPMessaging.Messages
             : base(info, context)
         {
             if (info == null) return;
-            Data = info.GetValue<string>(DataSerialisationStr);
+            Data = info.GetValue<string>(nameof(Data));
         }
 
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             base.GetObjectData(info, context);
-            info.AddValue<string>(DataSerialisationStr, Data);
+            info.AddValue(nameof(Data), Data);
         }
     }
 }

@@ -4,11 +4,10 @@ using UDPMessaging.Extensions;
 
 namespace UDPMessaging.Identification.MessageTypeIdentification
 {
-    [Serializable()]
+    [Serializable]
     public class StringMessageTypeIdentification : IMessageTypeIdentification, ISerializable
     {
         private readonly string _identification;
-        private const string IdentificationSerialisationStr = "_identification";
 
         public StringMessageTypeIdentification(string identification)
         {
@@ -17,7 +16,7 @@ namespace UDPMessaging.Identification.MessageTypeIdentification
 
         protected StringMessageTypeIdentification(SerializationInfo info, StreamingContext ctxt)
         {
-            _identification = info.GetValue<string>(IdentificationSerialisationStr);
+            _identification = info.GetValue<string>(nameof(_identification));
         }
 
         public override bool Equals(object obj)
@@ -45,7 +44,7 @@ namespace UDPMessaging.Identification.MessageTypeIdentification
 
         public void GetObjectData(SerializationInfo info, StreamingContext context)
         {
-            info.AddValue<string>(IdentificationSerialisationStr, _identification);
+            info.AddValue(nameof(_identification), _identification);
         }
 
         public object GetIdentification()

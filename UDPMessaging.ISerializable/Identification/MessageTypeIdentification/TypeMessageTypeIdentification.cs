@@ -3,7 +3,7 @@ using System.Runtime.Serialization;
 
 namespace UDPMessaging.Identification.MessageTypeIdentification
 {
-    [Serializable()]
+    [Serializable]
     public class TypeMessageTypeIdentification : StringMessageTypeIdentification
     {
         public TypeMessageTypeIdentification(Type type)

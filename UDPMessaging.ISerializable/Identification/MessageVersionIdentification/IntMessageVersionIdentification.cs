@@ -4,20 +4,19 @@ using UDPMessaging.Extensions;
 
 namespace UDPMessaging.Identification.MessageVersionIdentification
 {
-    [Serializable()]
-    public class IntMessageVersionIdentification : IMessageVersionIdentification
+    [Serializable]
+    public class IntMessageVersionIdentification : IMessageVersionIdentification, ISerializable
     {
-        private readonly int _versionIdentification;
-        private const string VersionIdentificationSerialisationStr = "_versionIdentification";
+        private readonly int _identification;
 
-        public IntMessageVersionIdentification(int versionIdentification)
+        public IntMessageVersionIdentification(int identification)
         {
-            _versionIdentification = versionIdentification;
+            _identification = identification;
         }
 
         protected IntMessageVersionIdentification(SerializationInfo info, StreamingContext ctxt)
         {
-            _versionIdentification = info.GetValue<int>(VersionIdentificationSerialisationStr);
+            _identification = info.GetValue<int>(nameof(_identification));
         }
 
         public override bool Equals(object obj)
@@ -27,12 +26,12 @@ namespace UDPMessaging.Identification.MessageVersionIdentification
 
         public override int GetHashCode()
         {
-            return _versionIdentification;
+            return _identification;
         }
 
         public void GetObjectData(SerializationInfo info, StreamingContext context)
         {
-            info.AddValue<int>(VersionIdentificationSerialisationStr, _versionIdentification);
+            info.AddValue(nameof(_identification), _identification);
         }
 
         public int CompareTo(object obj)
@@ -40,9 +39,9 @@ namespace UDPMessaging.Identification.MessageVersionIdentification
             switch (obj)
             {
                 case int i:
-                    return _versionIdentification.CompareTo(i);
+                    return _identification.CompareTo(i);
                 case IntMessageVersionIdentification imvi:
-                    return _versionIdentification.CompareTo(imvi._versionIdentification);
+                    return _identification.CompareTo(imvi._identification);
             }
 
             throw new ArgumentException("obj is not a compatible type with this instance");
@@ -50,7 +49,7 @@ namespace UDPMessaging.Identification.MessageVersionIdentification
 
         public object GetIdentification()
         {
-            return _versionIdentification;
+            return _identification;
         }
 
         public bool Equals(IMessageVersionIdentification obj)
