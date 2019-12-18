@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 using System.Text;
 using UDPMessaging.Messages;
 
@@ -10,6 +11,11 @@ namespace UDPMessaging.Serialisation
 
         public byte[] Serialize(IBaseMessage message)
         {
+            if (message == null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
             string json = JsonConvert.SerializeObject(message, Settings);
             return Encoding.UTF8.GetBytes(json);
         }
