@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MessagePack" Version="2.0.323" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\UDPMessaging\UDPMessaging.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Identification\MessageVersionIdentification\" />
+    <Folder Include="Identification\PeerIdentification\" />
+  </ItemGroup>
+
+</Project>

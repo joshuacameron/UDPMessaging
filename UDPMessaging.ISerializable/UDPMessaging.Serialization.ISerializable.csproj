@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>UDPMessaging</RootNamespace>
-    <AssemblyName>UDPMessaging.ISerializable</AssemblyName>
+    <AssemblyName>UDPMessaging.Serialization.ISerializable</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
