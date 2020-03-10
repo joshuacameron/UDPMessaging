@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Net;
 using UDPMessaging.Identification.PeerIdentification;
 
@@ -6,31 +7,31 @@ namespace UDPMessaging.PeerManagement
 {
     public class PeerManager : IPeerManager
     {
-        private readonly Dictionary<IPeerIdentification, IPEndPoint> _peers;
+        private readonly IDictionary<IPeerIdentification, IPEndPoint> _peers;
 
         public PeerManager()
         {
-            _peers = new Dictionary<IPeerIdentification, IPEndPoint>();
+            _peers = new ConcurrentDictionary<IPeerIdentification, IPEndPoint>();
         }
 
         public bool AddOrUpdatePeer(IPeerIdentification peerIdentification, IPEndPoint ipEndPoint)
         {
-            lock (_peers)
+            _peers.TryGetValue(peerIdentification, out IPEndPoint existingValue);
+
+            if (ipEndPoint.Equals(existingValue))
             {
-                bool isNewPeer = !_peers.ContainsKey(peerIdentification);
-
-                _peers[peerIdentification] = ipEndPoint;
-
-                return isNewPeer;
+                return false;
             }
+
+            _peers[peerIdentification] = ipEndPoint;
+
+            return existingValue == null;
         }
 
         public IPEndPoint GetPeerIPEndPoint(IPeerIdentification peerIdentification)
         {
-            lock (_peers)
-            {
-                return _peers.TryGetValue(peerIdentification, out IPEndPoint ipEndPoint) ? ipEndPoint : null;
-            }
+            _peers.TryGetValue(peerIdentification, out IPEndPoint ipEndPoint);
+            return ipEndPoint;
         }
 
         public IPEndPoint this[IPeerIdentification peerIdentification] => GetPeerIPEndPoint(peerIdentification);
